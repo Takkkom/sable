@@ -101,7 +101,7 @@ public class ServerSubLevel extends SubLevel implements PhysicsPipelineBody {
      * This also includes the child's jointed sub-level.
      * This includes instances of `this`.
      */
-    private final ObjectCollection<ServerSubLevel> interactedSubLevels = new ObjectOpenHashSet<>();
+    private final ObjectCollection<ServerSubLevel> interactiveSubLevels = new ObjectOpenHashSet<>();
 
     /**
      * Nullable lazy map of force group -> force totals
@@ -142,7 +142,7 @@ public class ServerSubLevel extends SubLevel implements PhysicsPipelineBody {
      */
     private boolean trackIndividualQueuedForces = false;
 
-    private boolean updateInteractedSubLevelsNextTick;
+    private boolean updateInteractiveSubLevelsNextTick;
 
     /**
      * Creates a new sub-level with the given parent level and pose.
@@ -159,7 +159,7 @@ public class ServerSubLevel extends SubLevel implements PhysicsPipelineBody {
 
         assert physicsSystem != null;
         this.runtimeId = physicsSystem.getNextRuntimeID();
-        this.updateInteractedSubLevels();
+        this.updateInteractiveSubLevels();
     }
 
     /**
@@ -318,9 +318,9 @@ public class ServerSubLevel extends SubLevel implements PhysicsPipelineBody {
             }
         });
 
-        if (this.updateInteractedSubLevelsNextTick) {
-            this.updateInteractedSubLevels();
-            this.updateInteractedSubLevelsNextTick = false;
+        if (this.updateInteractiveSubLevelsNextTick) {
+            this.updateInteractiveSubLevels();
+            this.updateInteractiveSubLevelsNextTick = false;
         }
 
         final ServerLevelPlot plot = this.getPlot();
@@ -415,7 +415,7 @@ public class ServerSubLevel extends SubLevel implements PhysicsPipelineBody {
         }
     }
 
-    private void updateInteractedSubLevels() {
+    private void updateInteractiveSubLevels() {
         final Deque<ServerSubLevel> queue = new ArrayDeque<>();
         queue.add(this);
 
@@ -431,8 +431,8 @@ public class ServerSubLevel extends SubLevel implements PhysicsPipelineBody {
             });
         }
         allSubLevels.forEach(serverSubLevel -> {
-            serverSubLevel.interactedSubLevels.clear();
-            serverSubLevel.interactedSubLevels.addAll(allSubLevels);
+            serverSubLevel.interactiveSubLevels.clear();
+            serverSubLevel.interactiveSubLevels.addAll(allSubLevels);
 
             //Display the size of allSubLevels for debugging.
             //serverSubLevel.setName(String.valueOf(allSubLevels.size()));
@@ -562,18 +562,18 @@ public class ServerSubLevel extends SubLevel implements PhysicsPipelineBody {
         return this.jointedSubLevels;
     }
 
-    public ObjectCollection<ServerSubLevel> getInteractedSubLevels() {
-        return this.interactedSubLevels;
+    public ObjectCollection<ServerSubLevel> getInteractiveSubLevels() {
+        return this.interactiveSubLevels;
     }
 
     public void addJointedSubLevels(final ServerSubLevel subLevel) {
         this.jointedSubLevels.add(subLevel);
-        this.updateInteractedSubLevelsNextTick = true;
+        this.updateInteractiveSubLevelsNextTick = true;
     }
 
     public void removeJointedSubLevels(final ServerSubLevel subLevel) {
         this.jointedSubLevels.remove(subLevel);
-        this.updateInteractedSubLevelsNextTick = true;
+        this.updateInteractiveSubLevelsNextTick = true;
     }
 
     /**
